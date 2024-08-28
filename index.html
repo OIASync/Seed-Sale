@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy GIO Tokens with Solflare Wallet</title>
+    <!-- Include Solana Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.js"></script>
+</head>
+<body>
+    <h1>Buy GIO Tokens</h1>
+    <button id="connect-wallet" onclick="connectWallet()">Connect Solflare Wallet</button>
+    <p id="wallet-address"></p>
+    <input type="number" id="gio-amount" placeholder="Enter GIO amount">
+    <button id="buy-tokens" onclick="buyTokens()">Buy GIO Tokens</button>
+    <p id="transaction-status"></p>
+
+    <script>
+        const GIO_TOKEN_MINT = 'C2ibAKiMfk9t1heuXtDijRgiKmZEKWNJLN5oMxDgPqV5';
+        const SOLANA_NETWORK = 'https://api.mainnet-beta.solana.com'; // Solana mainnet
+        const GIO_PRICE_IN_SOL = 0.0000465; // Price per GIO in SOL
+
+        let solflareWallet;
+        let walletAddress;
+
+        async function connectWallet() {
+            try {
+                // Check if Solflare wallet is available in the browser
+                if (window.solflare && window.solflare.isSolflare) {
+                    solflareWallet = window.solflare;
+                } else {
+                    alert("Solflare Wallet is not installed. Please install it from the Chrome Web Store.");
+                    return;
+                }
+
+                // Attempt to connect the wallet
+                await solflareWallet.connect();
+
+                // Get the wallet public key
+                walletAddress = solflareWallet.publicKey.toString();
+                document.getElementById('wallet-address').innerText = `Connected: ${walletAddress}`;
+            } catch (err) {
+                console.error("Connection error:", err);
+                alert("Failed to connect to Solflare Wallet. Please make sure you have the Solflare extension installed.");
+            }
+        }
+
+        async function buyTokens() {
+            try {
+                if (!solflareWallet || !solflareWallet.publicKey) {
+                    alert("Please connect your Solflare wallet first.");
+                    return;
+                }
+
+                const connection = new solanaWeb3.Connection(SOLANA_NETWORK);
+                const amountGIO = parseFloat(document.getElementById('gio-amount').value);
+                if (!amountGIO || amountGIO <= 0) {
+                    alert("Please enter a valid GIO amount.");
+                    return;
+                }
+
+                const solAmount = GIO_PRICE_IN_SOL * amountGIO;
+
+                // Create a new transaction
+                const transaction = new solanaWeb3.Transaction();
+                
+                // Add your transaction instructions here
+                // Example: Transfer SOL to a specific address
+
+                // Sign the transaction using Solflare
+                const signedTransaction = await solflareWallet.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+
+                document.getElementById('transaction-status').innerText = `Transaction successful: ${signature}`;
+            } catch (err) {
+                console.error("Transaction failed:", err);
+                document.getElementById('transaction-status').innerText = `Transaction failed: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
